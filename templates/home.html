@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block Title %}HOME{% endblock %}
+
+
+
+{% block content %}
+    {% if user.is_authenticated %}
+        <h2>Welcome {{ user.username }}</h2>
+    {% endif %}
+
+    <div class="modal fade" id="modal-user">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <p>
+            <button type="button" class="btn btn-primary js-create-user" data-url="{% url 'account:user_create' %}">
+                <i class="fa fa-plus"></i>
+                New User
+            </button>
+        </p>
+        <table class="table tex-center table-hover table-striped table-borderless dt-responsive nowrap" id="user-table" data-url="{% url 'account:user_list' %}">
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Username</th>
+                <th scope="col">Label</th>
+                <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+{#            {% include 'account/partial_user_list.html' %}#}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script>
+        function hello() {
+
+        }
+    </script>
+    <script src="{% static 'account/js/accounts.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,28 @@
+<div class="col-4 mx-auto" style="height: 100%;">
+<h2>{{ title }}</h2>
+<form method="post" class="form-group align-middle">
+    {% csrf_token %}
+    {% for field in form_context %}
+        <p>
+            {{ field.label_tag }}
+            {{ field }}
+
+            {% if field.help_text %}
+                <small style="color: gray;">{{ field.help_text }}</small>
+            {% endif %}
+        </p>
+    {% endfor %}
+    {% for error in field.errors %}
+        <p style="color: red;">{{ error }}</p>
+    {% endfor %}
+
+    {% if login_form.non_field_errors %}
+        <div style="color: red;">
+            <p>{{ login_form.non_field_errors }}</p>
+        </div>
+    {% endif %}
+    <button class="btn btn-primary" type="submit">Login</button>
+
+
+</form>
+</div>

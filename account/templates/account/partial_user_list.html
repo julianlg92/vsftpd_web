@@ -1,0 +1,24 @@
+{% for account in users %}
+    <tr>
+        <th scope="row">{{ forloop.counter }}</th>
+        <td>{{ account.username }}</td>
+        <td>{{ account.label }}</td>
+        <td>
+            <div class="btn-group" role="group" aria-label="Actions">
+                <button type="button" class="btn btn-outline-success js-update-user"
+                        data-url="{% url 'account:update' account.pk %}"><i
+                        class="fa fa-user-edit"></i>
+                </button>
+                <button type="button" class="btn btn-outline-danger js-delete-user"
+                        data-url="{% url 'account:delete' account.pk %}">
+                        <i class="fa fa-trash"></i>
+                </button>
+            </div>
+        </td>
+    </tr>
+
+{% empty %}
+    <tr>
+        <td colspan="4" class="text-center bg-warning">No Users</td>
+    </tr>
+{% endfor %}
