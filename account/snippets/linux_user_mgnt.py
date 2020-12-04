@@ -8,14 +8,21 @@ class UserCreationError(Exception):
     pass
 
 
-class PasswdChangeError(Exception):
+class UserEditionError(Exception):
     """
     Custom exception for Linux user password change
     """
     pass
 
 
-def user_creation(username, label=''):
+class UserDeleteError(Exception):
+    """
+    Custom exception for Linux user delete
+    """
+    pass
+
+
+def user_modify_or_create(username, password, label='', modify=False):
     """
     Linux user creation.
 
@@ -24,21 +31,38 @@ def user_creation(username, label=''):
     :return:
     """
 
-    # Consider change shell to ftp only, not bash
-    # use -s /bin/nologin for user locking at creation
-    command = subprocess.run(
-        ['useradd', '-c', label, '-m', '-s', '/bin/nologin', username], capture_output=True)
-    if command.returncode != 0:
-        raise UserCreationError
+    if modify:
+        if password != '':
+            pass_command = subprocess.run(
+                f'echo {username}:{password} | sudo chpasswd', stdout=subprocess.PIPE, shell=True)
+            if pass_command.returncode != 0:
+                raise UserEditionError
+        mod_command = subprocess.run('sudo usermod -c "' + label + '" ' + username, capture_output=True, shell=True)
 
+        if mod_command.returncode != 0:
+            raise UserEditionError
+    else:
+        # Consider change shell to ftp only, not bash
+        # use -s /bin/nologin for user locking at creation
+        useradd_command = subprocess.run(
+            "sudo useradd -c '" + label +
+            "' -m -s /bin/nologin -p $(echo '" + password +
+            "' | openssl passwd -1 -stdin) " + username,
+            capture_output=True, shell=True)
+        disable_command = subprocess.run(
+            'usermod -l ' + username, capture_output=True, shell=True)
 
-def user_passwd_change(username, password):
-    proc = subprocess.run(
-        f'echo {username}:{password} | chpasswd', stdout=subprocess.PIPE, shell=True)
-
-    if proc.returncode != 0:
-        raise PasswdChangeError
+        if useradd_command.returncode != 0 and disable_command.returncode != 0:
+            raise UserCreationError
 
 
 def user_enable(username):
     pass
+
+
+def user_delete(username):
+    userdel_command = subprocess.run(
+        'sudo userdel -f ' + username, capture_output=True, shell=True)
+
+    if userdel_command.returncode != 0:
+        raise UserDeleteError

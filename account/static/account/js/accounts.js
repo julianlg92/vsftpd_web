@@ -5,16 +5,16 @@ $(document).ready(function () {
         'processing': true,
         "columnDefs": [{ "width": "10%", "targets": 3 }, {className: 'text-center'}, 'targets: [0,1,2]'],
         'serverSide': false,
-        'initComplete': function (settings) {
+        // 'initComplete': function (settings) {
 
-            // Update User
-            $('#modal-user').on('submit', '.js-user-update-form', saveFrom);
-            $('.js-update-user').click(loadForm);
-            //
-            // // Delete User
-            $('#modal-user').on('submit', '.js-user-delete-form', saveFrom);
-            $('.js-delete-user').click(loadForm);
-        },
+        //     // Update User
+        //     $('.js-update-user').click(loadForm);
+        //     $('#modal-user').on('submit', '.js-user-update-form', saveFrom);
+        //     //
+        //     // // Delete User
+        //     $('.js-delete-user').click(loadForm);
+        //     $('#modal-user').on('submit', '.js-user-delete-form', saveFrom);
+        // },
         ajax: {
             url: table.attr('data-url'),
             dataSrc: 'data',
@@ -67,6 +67,14 @@ $(document).ready(function () {
             type: form.attr('method'),
             dataType: 'json',
             success: function (data) {
+                if (data.user_error) {
+                    $('#modal-user').modal('hide');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Something went wrong!'
+                      })
+                }
                 if (data.form_is_valid) {
                     // $('#user-table tbody').html(data.html_user_list);
                     $('#modal-user').modal('hide');
@@ -82,11 +90,17 @@ $(document).ready(function () {
 
     /*  Binding  */
 
-// Create User
+    let table1 = $('#user-table').DataTable();
+    
+    table1.on('click', '.js-delete-user', loadForm);
+    $('#modal-user').on('submit', '.js-user-delete-form', saveFrom);
+
+    table1.on('click', '.js-update-user', loadForm);
+    $('#modal-user').on('submit', '.js-user-update-form', saveFrom);
+
+    // Create User
     $('.js-create-user').click(loadForm);
     $('#modal-user').on('submit', '.js-user-create-form', saveFrom);
-
-
 });
 
 

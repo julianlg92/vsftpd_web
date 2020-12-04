@@ -1,4 +1,5 @@
 import json
+import subprocess
 
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -7,7 +8,8 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
 
-from .snippets.linux_user_mgnt import user_creation, UserCreationError
+from .snippets.linux_user_mgnt import (user_modify_or_create, UserCreationError, UserEditionError,
+                                       user_delete, UserDeleteError)
 from .forms import AccountCreationForm, AccountAuthenticationFrom, AccountUpdateForm
 from .models import AccountModel
 
@@ -83,13 +85,17 @@ def login_view(request):
 def save_user_form(request, form, template_name):
     data = {}
 
+    modify = True if (form.instance.username != '') else False
+    
     if request.method == 'POST':
         if form.is_valid():
+            username = form.cleaned_data['username']
+            label = form.cleaned_data['label']
+            password = form.cleaned_data['password'] if modify else form.cleaned_data['password1']
             try:
-                username = form.cleaned_data['username']
-                label = form.cleaned_data['label']
-                user_creation(username, label)
-            except UserCreationError:
+                user_modify_or_create(username, password, label, modify)
+            except (UserCreationError, UserEditionError):
+                data['user_error'] = True
                 data['form_is_valid'] = False
             else:
                 data['form_is_valid'] = True
@@ -98,7 +104,8 @@ def save_user_form(request, form, template_name):
             data['form_is_valid'] = False
 
     context = {'form': form}
-    data['html_form'] = render_to_string(template_name=template_name, context=context, request=request)
+    data['html_form'] = render_to_string(
+        template_name=template_name, context=context, request=request)
     return JsonResponse(data)
 
 
@@ -141,9 +148,16 @@ def delete_view(request, pk):
     account = get_object_or_404(AccountModel, pk=pk)
     data = {}
     if request.method == 'POST':
-        data['form_is_valid'] = True
-        account.delete()
+        try:
+            user_delete(account.username)
+        except UserDeleteError:
+            data['form_is_valid'] = False
+            data['user_error'] = True
+        else:
+            data['form_is_valid'] = True
+            account.delete()
     else:
         context = {'account': account}
-        data['html_form'] = render_to_string('account/partial_user_delete.html', context, request=request)
+        data['html_form'] = render_to_string(
+            'account/partial_user_delete.html', context, request=request)
     return JsonResponse(data)
