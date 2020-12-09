@@ -23,8 +23,9 @@ class AccountManager(BaseUserManager):
             label=label
         )
 
-        user.is_admin = True
+        user.is_enabled = True
         user.is_superuser = True
+        user.is_moderator = True
         user.is_staff = True
         user.save(using=self._db)
         return user
@@ -47,11 +48,11 @@ class AccountModel(AbstractBaseUser):
     label = models.CharField(max_length=40, )
     date_joined = models.DateTimeField(verbose_name='date_joined', auto_now_add=True)
     last_login = models.DateTimeField(verbose_name='last_login', auto_now=True)
-    group = models.ForeignKey(AccountGroupModel, null=True, on_delete=models.SET_NULL)
-    is_admin = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)
+    group = models.ForeignKey(AccountGroupModel, null=True, on_delete=models.SET_NULL, blank=True)
     is_superuser = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    is_moderator = models.BooleanField(default=False)
+    is_enabled = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['label']
@@ -66,10 +67,10 @@ class AccountModel(AbstractBaseUser):
         return self.label
 
     def has_perm(self, perm, obj=None):
-        return self.is_admin
+        return self.is_superuser
 
     def has_module_perms(self, app_label):
-        return self.is_admin
+        return self.is_superuser
 
     def save(self, *args, **kwargs):
         self.username = self.username.lower()

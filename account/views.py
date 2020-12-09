@@ -1,5 +1,4 @@
 import json
-import subprocess
 
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -19,7 +18,8 @@ from .models import AccountModel
 def home(request):
     obj = AccountModel.objects.all()
     context = {
-        'users': obj
+        'users': obj,
+        'home_active': 'active'
     }
     return render(request, 'home.html', context)
 
@@ -68,8 +68,11 @@ def login_view(request):
             user = authenticate(username=username, password=password)
 
             if user:
-                login(request, user)
-                return redirect('home')
+                if user.is_moderator:
+                    login(request, user)
+                    return redirect('home')
+                else:
+                    messages.warning(request, f'User {username} is not staff')
             else:
                 messages.error(request, 'Invalid Credentials')
 
@@ -82,11 +85,33 @@ def login_view(request):
 """
 
 
+def user_list(request):
+    user_obj = []
+    users = AccountModel.objects.all() if request.user.is_superuser else AccountModel.objects.filter(
+        group=request.user.group).exclude(pk=request.user.pk).exclude(is_enabled=False)
+    if users.__len__() > 0:
+        count = 1
+        for user in users:
+            obj = {
+                'id': count,
+                'username': user.username,
+                'label': user.label,
+                'pk': str(user.pk)
+            }
+            user_obj.append(obj)
+            count += 1
+
+        data = json.dumps({'data': user_obj})
+        return HttpResponse(data, content_type='application/json')
+    else:
+        return JsonResponse({'show': False})
+
+
 def save_user_form(request, form, template_name):
     data = {}
 
     modify = True if (form.instance.username != '') else False
-    
+
     if request.method == 'POST':
         if form.is_valid():
             username = form.cleaned_data['username']
@@ -109,32 +134,8 @@ def save_user_form(request, form, template_name):
     return JsonResponse(data)
 
 
-def user_list(request):
-    user_obj = []
-    users = AccountModel.objects.all()
-    if users.__len__() > 0:
-        count = 1
-        for user in users:
-            obj = {
-                'id': count,
-                'username': user.username,
-                'label': user.label,
-                'pk': str(user.pk)
-            }
-            user_obj.append(obj)
-            count += 1
-
-        data = json.dumps({'data': user_obj})
-        return HttpResponse(data, content_type='application/json')
-    else:
-        return JsonResponse({'show': False})
-
-
 def user_create(request):
-    if request.method == 'POST':
-        form = AccountCreationForm(request.POST)
-    else:
-        form = AccountCreationForm()
+    form = AccountCreationForm(request.POST or None)
     return save_user_form(request, form, template_name='account/partial_user_create.html')
 
 

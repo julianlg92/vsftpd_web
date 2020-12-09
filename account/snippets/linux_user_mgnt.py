@@ -50,9 +50,9 @@ def user_modify_or_create(username, password, label='', modify=False):
             "' | openssl passwd -1 -stdin) " + username,
             capture_output=True, shell=True)
         disable_command = subprocess.run(
-            'usermod -l ' + username, capture_output=True, shell=True)
+            'sudo usermod -L ' + username, capture_output=True, shell=True)
 
-        if useradd_command.returncode != 0 and disable_command.returncode != 0:
+        if useradd_command.returncode != 0 or disable_command.returncode != 0:
             raise UserCreationError
 
 
