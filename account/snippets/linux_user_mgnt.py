@@ -57,7 +57,10 @@ def user_modify_or_create(username, password, label='', modify=False):
 
 
 def user_enable(username):
-    pass
+    enable_command = subprocess.run(f'sudo usermod -U {username}', shell=True, capture_output=True)
+
+    if enable_command.returncode != 0:
+        raise UserDeleteError
 
 
 def user_delete(username):

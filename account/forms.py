@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.hashers import make_password
 
-from .models import AccountModel
+from .models import AccountModel, AccountGroupModel
 
 from string import punctuation
 
@@ -10,19 +10,17 @@ from string import punctuation
 class AccountCreationForm(UserCreationForm):
     username = forms.CharField(max_length=15, )
     label = forms.CharField(max_length=30, )
-
-    # def __init__(self, *args, **kwargs):
-    #     super(AccountCreationForm, self).__init__(*args, **kwargs)
-    #
-    #     for field in ['username', 'label', 'password1', 'password2']:
-    #         self.fields[field].help_text = None
-    #         self.fields[field].label = ''
-    #         self.fields[field].widget.attrs['class'] = 'form-control mb-4 text-center'
-    #         self.fields[field].widget.attrs['placeholder'] = field.upper()
+    group = forms.ModelChoiceField(queryset=AccountGroupModel.objects.all())
 
     class Meta:
         model = AccountModel
-        fields = ['username', 'label', 'password1', 'password2']
+        fields = ['username', 'label', 'password1', 'password2', 'group']
+
+    def __init__(self, *args, **kwargs):
+        _is_super = kwargs.pop('is_super', None)
+        super(AccountCreationForm, self).__init__(*args, **kwargs)
+        if not _is_super:
+            del self.fields['group']
 
     def clean_username(self):
         username = self.cleaned_data['username'].strip()

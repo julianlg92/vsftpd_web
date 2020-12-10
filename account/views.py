@@ -3,6 +3,7 @@ import json
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
@@ -135,7 +136,7 @@ def save_user_form(request, form, template_name):
 
 
 def user_create(request):
-    form = AccountCreationForm(request.POST or None)
+    form = AccountCreationForm(request.POST or None, is_super=request.user.is_superuser)
     return save_user_form(request, form, template_name='account/partial_user_create.html')
 
 

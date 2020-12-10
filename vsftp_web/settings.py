@@ -26,7 +26,7 @@ SECRET_KEY = '#_70+3dh5to4dxb(zvb$e2qh*+ct9&738li5pl72!v0k%xk*c$'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['172.22.8.161', 'localhost', 'ftp.multiservi.cu']
+ALLOWED_HOSTS = ['172.22.8.161', 'localhost', '172.22.8.234', 'ftp.multiservi.cu']
 
 # Application definition
 
