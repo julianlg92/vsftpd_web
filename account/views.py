@@ -17,12 +17,7 @@ from .models import AccountModel
 # Create your views here.
 @login_required
 def home(request):
-    obj = AccountModel.objects.all()
-    context = {
-        'users': obj,
-        'home_active': 'active'
-    }
-    return render(request, 'home.html', context)
+    return render(request, 'home.html')
 
 
 def registration_view(request):
@@ -31,18 +26,14 @@ def registration_view(request):
         'register_active': 'active'
     }
     if request.POST:
-        form = AccountCreationForm(request.POST)
+        form = AccountCreationForm(request.POST, group_edit=request.user.is_anonymous)
         if form.is_valid():
             form.save()
-            username = form.cleaned_data['username']
-            raw_passwd = form.cleaned_data['password1']
-            account = authenticate(username=username, password=raw_passwd)
-            login(request, account)
-            return redirect('home')
+            return redirect('login')
         else:
             context['registration_form'] = form
     else:
-        form = AccountCreationForm()
+        form = AccountCreationForm(group_edit=request.user.is_anonymous)
         context['registration_form'] = form
     return render(request, 'account/register.html', context)
 
@@ -81,15 +72,21 @@ def login_view(request):
     return render(request, 'account/login.html', context)
 
 
+@login_required
+def requests(request):
+    return render(request, 'account/enable.html')
+
+
 """
  AJAX Views
 """
 
 
-def user_list(request):
+def user_list(request, **kwars):
     user_obj = []
-    users = AccountModel.objects.all() if request.user.is_superuser else AccountModel.objects.filter(
-        group=request.user.group).exclude(pk=request.user.pk).exclude(is_enabled=False)
+    exclude_enable = kwars['exclude_enable']
+    users = AccountModel.objects.all().exclude(is_enabled=exclude_enable) if request.user.is_superuser else AccountModel.objects.filter(
+        group=request.user.group).exclude(pk=request.user.pk).exclude(is_enabled=exclude_enable)
     if users.__len__() > 0:
         count = 1
         for user in users:
@@ -105,7 +102,7 @@ def user_list(request):
         data = json.dumps({'data': user_obj})
         return HttpResponse(data, content_type='application/json')
     else:
-        return JsonResponse({'show': False})
+        return JsonResponse({'data': None})
 
 
 def save_user_form(request, form, template_name):
@@ -125,7 +122,11 @@ def save_user_form(request, form, template_name):
                 data['form_is_valid'] = False
             else:
                 data['form_is_valid'] = True
-                form.save()
+                user = form.save(commit=False)
+                if request.user.is_moderator:
+                    user.is_enabled = True
+                user = form.save()
+
         else:
             data['form_is_valid'] = False
 
@@ -136,16 +137,32 @@ def save_user_form(request, form, template_name):
 
 
 def user_create(request):
-    form = AccountCreationForm(request.POST or None, is_super=request.user.is_superuser)
+    form = AccountCreationForm(
+        request.POST or None, group_edit=request.user.is_superuser)
     return save_user_form(request, form, template_name='account/partial_user_create.html')
 
 
 def user_update(request, pk):
     user = get_object_or_404(AccountModel, pk=pk)
-    form = AccountUpdateForm(request.POST or None, instance=user)
+    form = AccountUpdateForm(request.POST or None, instance=user, group_edit=request.user.is_superuser)
     return save_user_form(request, form, template_name='account/partial_user_update.html')
 
 
+@login_required
+def user_enable(request, pk):
+    data = {}
+
+    if request.method == 'PUT':
+        user = get_object_or_404(AccountModel, pk=pk)
+        user.is_enabled = True
+        user.save()
+        data['username'] = user.username
+        data['success'] = True
+
+    return JsonResponse(data)
+
+
+@login_required
 def delete_view(request, pk):
     account = get_object_or_404(AccountModel, pk=pk)
     data = {}

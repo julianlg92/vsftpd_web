@@ -10,25 +10,28 @@ from string import punctuation
 class AccountCreationForm(UserCreationForm):
     username = forms.CharField(max_length=15, )
     label = forms.CharField(max_length=30, )
-    group = forms.ModelChoiceField(queryset=AccountGroupModel.objects.all())
+    group = forms.ModelChoiceField(
+        queryset=AccountGroupModel.objects.all(), required=False)
 
     class Meta:
         model = AccountModel
-        fields = ['username', 'label', 'password1', 'password2', 'group']
+        fields = ['username', 'label', 'password1', 'password2', ]
 
     def __init__(self, *args, **kwargs):
-        _is_super = kwargs.pop('is_super', None)
+        _group_edit = kwargs.pop('group_edit', None)
         super(AccountCreationForm, self).__init__(*args, **kwargs)
-        if not _is_super:
+        if not _group_edit:
             del self.fields['group']
 
     def clean_username(self):
         username = self.cleaned_data['username'].strip()
         special_chars = punctuation
         if not (username.islower() or username.isspace()):
-            raise forms.ValidationError('Username can not contain uppercase or whitespaces')
+            raise forms.ValidationError(
+                'Username can not contain uppercase or whitespaces')
         elif any(char in special_chars for char in username):
-            raise forms.ValidationError('Username can not contain special characters')
+            raise forms.ValidationError(
+                'Username can not contain special characters')
         return username
 
 
@@ -49,15 +52,24 @@ class AccountAuthenticationFrom(forms.Form):
 class AccountUpdateForm(forms.ModelForm):
     username = forms.CharField(max_length=15,
                                widget=forms.TextInput(attrs={'readonly': 'readonly', 'class': 'form-control'}))
-    password = forms.CharField(required=False, widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    password = forms.CharField(
+        required=False, widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    group = forms.ModelChoiceField(
+        required=False, queryset=AccountGroupModel.objects.all())
 
     class Meta:
         model = AccountModel
-        fields = ['username', 'label', 'password']
+        fields = ['username', 'label', 'password', 'group']
 
         widgets = {
             'label': forms.TextInput(attrs={'class': 'form-control'})
         }
+
+    def __init__(self, *args, **kwargs):
+        _group_edit = kwargs.pop('group_edit', None)
+        super(AccountUpdateForm, self).__init__(*args, **kwargs)
+        if not _group_edit:
+            del self.fields['group']
 
     def save(self, commit=True):
         user_instance = super(AccountUpdateForm, self).save(commit=False)

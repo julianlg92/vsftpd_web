@@ -24,7 +24,7 @@
                 New User
             </button>
         </p>
-        <table class="table tex-center table-hover table-striped table-borderless dt-responsive nowrap" id="user-table" data-url="{% url 'account:user_list' %}">
+        <table class="table tex-center table-hover table-striped table-borderless dt-responsive nowrap" id="user-table" data-url="{% url 'account:enabled_user_list' %}">
             <thead class="thead-dark">
             <tr>
                 <th scope="col">#</th>
@@ -34,17 +34,12 @@
             </tr>
             </thead>
             <tbody>
-{#            {% include 'account/partial_user_list.html' %}#}
+
             </tbody>
         </table>
     </div>
 {% endblock %}
 
 {% block js %}
-    <script>
-        function hello() {
-
-        }
-    </script>
     <script src="{% static 'account/js/accounts.js' %}"></script>
 {% endblock %}

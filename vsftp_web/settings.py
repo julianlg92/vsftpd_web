@@ -31,7 +31,7 @@ ALLOWED_HOSTS = ['172.22.8.161', 'localhost', '172.22.8.234', 'ftp.multiservi.cu
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    # 'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'widget_tweaks',
+    'material.admin',
+    'material.admin.default',
 
     'account',
 ]

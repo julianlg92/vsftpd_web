@@ -32,7 +32,7 @@ class AccountManager(BaseUserManager):
 
 
 class AccountGroupModel(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         verbose_name = 'Group'

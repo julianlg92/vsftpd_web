@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<table class="table tex-center table-hover table-striped table-borderless dt-responsive nowrap" id="disbled-table" data-url="{% url 'account:disabled_user_list' %}">
+    <thead class="thead-dark">
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Username</th>
+        <th scope="col">Label</th>
+        <th scope="col">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    </tbody>
+</table>
+{% endblock content %}
+
+{% block js %} 
+<script src="{% static 'account/js/request.js' %}">
+</script>
+{% endblock js %}
