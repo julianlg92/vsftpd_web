@@ -46,7 +46,7 @@ def user_modify_or_create(username, password, label='', modify=False):
         # use -s /bin/nologin for user locking at creation
         useradd_command = subprocess.run(
             "sudo useradd -c '" + label +
-            "' -m -s /bin/nologin -p $(echo '" + password +
+            "' -m -s /usr/sbin/nologin -p $(echo '" + password +
             "' | openssl passwd -1 -stdin) " + username,
             capture_output=True, shell=True)
         disable_command = subprocess.run(
