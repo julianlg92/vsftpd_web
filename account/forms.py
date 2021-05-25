@@ -15,7 +15,7 @@ class AccountCreationForm(UserCreationForm):
 
     class Meta:
         model = AccountModel
-        fields = ['username', 'label', 'password1', 'password2', ]
+        fields = ['username', 'label', 'password1', 'password2', 'group']
 
     def __init__(self, *args, **kwargs):
         _group_edit = kwargs.pop('group_edit', None)
