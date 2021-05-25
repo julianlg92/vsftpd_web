@@ -28,6 +28,9 @@ def registration_view(request):
     if request.POST:
         form = AccountCreationForm(request.POST, group_edit=request.user.is_anonymous)
         if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password1']
+            user_modify_or_create(username, password)
             form.save()
             return redirect('login')
         else:
